@@ -1,10 +1,10 @@
 ---
-output: github_document
+title: 'STAT540 - Seminar 8: Unsupervised learning'
+output: 
+  github_document
 ---
 
-# STAT 540 - Seminar 8: Dimensionality reduction and Cluster Analysis-Hierarchical Clustering
-
-## Acknowledgements
+## Attributions
 
 Contributors: Gabriela Cohen Freue, Jasleen Grewal, Keegan Korthauer, Alice Zhu
 
@@ -13,9 +13,13 @@ knitr::opts_chunk$set(echo=TRUE, warning=TRUE, message=TRUE)
 knitr::opts_chunk$set(fig.width=6, fig.height=4) 
 ```
 
+## Overview
+
+This seminar will explore some aspects of unsupervised learning in high-dimensional biology: dimension reduction and clustering. 
+
 ##  Learning objectives
 
-By the end of this tutorial, you should be able to
+By the end of this tutorial, you should be able to:
 
 - Differentiate between sample-wise clustering and gene-wise clustering, and identify when either may be appropriate
 
@@ -35,7 +39,7 @@ By the end of this tutorial, you should be able to
 
 ## Introduction  
 
-In this seminar we'll explore clustering genes and samples using the Affymetrix microarray data characterizing the gene expression profile of nebulin knockout mice. This data was made available by [Li F et al. (2015)](https://pubmed.ncbi.nlm.nih.gov/26123491/), with the GEO accession number [GSE70213](https://www.ncbi.nlm.nih.gov/sites/GDSbrowser?acc=GDS5881). Here's a bit of background info on nebulin and the rationale of the study (quoted from the GEO entry):
+In this seminar we'll explore clustering genes and samples using Affymetrix microarray data characterizing the gene expression profile of nebulin knockout mice. This data was made available by [Li F et al. (2015)](https://pubmed.ncbi.nlm.nih.gov/26123491/), with the GEO accession number [GSE70213](https://www.ncbi.nlm.nih.gov/sites/GDSbrowser?acc=GDS5881). Here's a bit of background info on nebulin and the rationale of the study (quoted from the GEO entry):
 
 >Nebulin is a giant filamentous protein that is coextensive with the actin filaments of the skeletal muscle sarcomere. Nebulin mutations are the main cause of nemaline myopathy (NEM), with typical NEM adult patients having low expression of nebulin, yet the roles of nebulin in adult muscle remain poorly understood. To establish nebulin’s functional roles in adult muscle we performed studies on a novel conditional nebulin KO (Neb cKO) mouse model in which nebulin deletion was driven by the muscle creatine kinase (MCK) promotor. Neb cKO mice are born with high nebulin levels in their skeletal muscle but within weeks after birth nebulin expression rapidly falls to barely detectable levels Surprisingly, a large fraction of the mice survives to adulthood with low nebulin levels (<5% of control), contain nemaline rods, and undergo fiber-type switching towards oxidative types. These microarrays investigate the changes in gene expression when nebulin is deficient.
 
@@ -61,22 +65,22 @@ library(pheatmap)
 library(matrixStats)
 library(ggplot2)
 library(Rtsne)
-theme_set(theme_bw())
+theme_set(theme_bw()) # prettier ggplot plots 
 ```
 
 ### Download and read the data into R
 
-We will be downloading in the data using the `GEOquery` library. This lets us read in the expression data and phenotypic (meta) data for a particular analysis, using its GEO accession ID.  
+As we've done for several past seminars, we will be downloading in the data using the `GEOquery` library. This lets us read in the expression data and phenotypic (meta) data using its GEO accession ID.  
 
 ```{r}
-#Get geo object that contains our data and phenotype information  
+# Get geo object that contains our data and phenotype information  
 geo_obj <- getGEO("GSE70213", getGPL = FALSE)
 geo_obj <- geo_obj[[1]]
 
 geo_obj
 ```
 
-**Note**: You might get an error like `Error in download.file..cannot download all files`.  
+**Note**: Sometimes you might get an error like `Error in download.file..cannot download all files`.  
 This happens when R cannot connect to the NCBI ftp servers from linux systems. Try setting the 'download.file.method' to the 'curl' option to fix this.  
 
 ```{r, eval=FALSE, echo=TRUE}
@@ -102,7 +106,7 @@ pData(geo_obj) <- pData(geo_obj) %>%
   select(-contains("characteristics"))
 rownames(pData(geo_obj)) <- colnames(exprs(geo_obj))
 
-str(pData(geo_obj))
+head(pData(geo_obj))
 ```
 
 ## Exploratory analysis
@@ -142,7 +146,8 @@ min(exprs(geo_obj))
 exprs(geo_obj) <- log2(exprs(geo_obj))
 ```
 
-Finally, as an additional step to make visualization easier later, we'll center and scale the rows in our expression matrix, since we're not interested in absolute differences in expression between genes at the moment. Essentially, for each gene we will subtract its mean, and divide by its standard deviation (the same as z-scores). Note that the `scale` function we will use to do this by default *operates on columns* so we need to transpose with `t()` **before and after** using it in order to center and the scale rows.
+Finally, we'll center and scale the rows in our expression matrix, since we're not interested in absolute differences in expression *between* genes at the moment. This additional step will make visualization easier later.
+Essentially, for each gene we will subtract its mean, and divide by its standard deviation (the same as z-scores). Note that the `scale` function we will use to do this by default *operates on columns* so we need to transpose with `t()` **before and after** using it in order to center and the scale rows.
 
 Since we still want to keep our original expression data, we'll put this in a separate matrix. Note that although one can do this step within the `pheatmap()` function, it will not be available for other functions we will use.
 
@@ -241,7 +246,11 @@ pheatmap(expr_scaled,
          annotation = pData(geo_obj)[,c("tissue","genotype")])
 ```
 
-__Exercise__: Play with the options of the pheatmap function (i.e. select different `clustering_method`, `clustering_distance_cols`, `scale` options - see `?pheatmap` for available options) and compare the different heatmaps. Note that one can also use the original data `exprs(geo_obj)` and set the option `scale = "row"`. You will get the same heatmaps although the columns may be ordered slightly differently as you can flip the bottom level of a dendrogram and it will still represent identical hierarchical clustering (use `cluster_cols = FALSE` to suppress reordering).  
+__Exercise (not marked)__: Play with the options of the pheatmap function (i.e. select different `clustering_method`, `clustering_distance_cols`, `scale` options - see `?pheatmap` for available options) and compare the different heatmaps. Note that one can also use the original data `exprs(geo_obj)` and set the option `scale = "row"`. You will get the same heatmaps although the columns may be ordered slightly differently as you can flip the bottom level of a dendrogram and it will still represent identical hierarchical clustering (use `cluster_cols = FALSE` to suppress reordering).  
+
+```{r}
+# Your code here
+```
 
 We can also change the colours of the different covariates.
 
@@ -329,7 +338,11 @@ kable(pr.kmTable)
 
 An aside on `set.seed()`: If you are using methods that require random number generation (like `kmeans`), you should consider setting a seed when finalizing an analysis. The reason is that your results might come out slightly different each time you run it. To ensure that you can exactly reproduce the results later, you should set the seed (and record what you set it to). Of course if your results are highly sensitive to the choice of seed, that indicates a problem. In the case above, we're just choosing genes for an exercise so it doesn't matter, but setting the seed makes sure all students are looking at the same genes. 
 
-__Exercise__: Repeat the analysis using a different seed and check if you get the same clusters.
+__Exercise (not marked)__: Repeat the analysis using a different seed and check if you get the same clusters.
+
+```{r}
+# Your code here
+```
 
 #### PAM algorithm
 
@@ -362,11 +375,19 @@ par(op)
 ```
 
 
-__Exercise:___
+__Exercise (not marked):__
 
-(1) Draw a plot with number of clusters in the x-axis and the average silhouette widths in the y-axis. Use the information obtained to determine if 5 was the best choice for the number of clusters.   
+(1) Draw a plot with number of clusters in the x-axis and the average silhouette widths in the y-axis. Use the information obtained to determine if 5 was the best choice for the number of clusters. 
 
-(2) For a common choice of $k$, compare the clustering across different methods, e.g. hierarchical (pruned to specific $k$, obviously), k-means, PAM. You will re-discover the "label switching problem" for yourself. How does that manifest itself? How concordant are the clusterings for different methods?   
+```{r}
+# Your code here
+```
+
+(2) For a common choice of $k$, compare the clustering across different methods, e.g. hierarchical (pruned to specific $k$, obviously), k-means, PAM. You will re-discover the "label switching problem" for yourself. How does that manifest itself? How concordant are the clusterings for different methods? 
+
+```{r}
+# Your code here
+```
 
 ## Gene clustering
 
@@ -376,7 +397,7 @@ In many cases, analysts use cluster analysis to illustrate the results of a diff
 
 ####  A smaller dataset 
 
-In [Seminar 5: Differential Expression Analysis](https://github.com/STAT540-UBC/STAT540-UBC.github.io/blob/master//seminars/seminars_winter_2021/seminar5/sm5_differential_expression_analysis.md), you learned how to use `limma` to fit a common linear model to a very large number of genes. Here well will fit an additive model and identify genes that show differential expression between nebulin KO and wildtype (control). 
+In [Seminar 5: Differential Expression Analysis](https://github.com/STAT540-UBC/seminar-05), you learned how to use `limma` to fit a common linear model to a very large number of genes. Here well will fit an additive model and identify genes that show differential expression between nebulin KO and wildtype (control). 
 
 ```{r echo=TRUE}
 cutoff <-  1e-05
@@ -526,7 +547,7 @@ An important issue for clustering is the question of certainty of the cluster me
 
 Unlike picking the right clusters in the partition based methods (like k-means and PAM), here we are identifying the most stable clustering arising from hierarchichal clustering.  
 
-```{r}
+```{r, fig.height=8, fig.width=8}
 pvc <- pvclust(expr_scaled[topGenes,], nboot = 100)
 plot(pvc, labels = pData(geo_obj)$grp, cex = 0.6)
 pvrect(pvc, alpha = 0.95) 
@@ -538,7 +559,7 @@ Here, values at branches are AU (approximately unbiased) p-values * 100 (left), 
 There are various ways to reduce the number of features (variables) being used in our clustering analyses. One option is to subset the number of variables (genes) based on variance, calculated using the limma package (choosing genes with the highest shrunken gene-specific variance). This way, we remove genes that are uninteresting since they don't vary much across samples. 
 
 ### PCA plots  
-Anoter way we can reduce the number of features is using PCA (principal components analysis). PCA assumes that the *most important* characteristics of our data are the ones with the largest variance. Furthermore, it takes our data and organizes it in such a way that redundancy is removed as the most important variables are listed first. The new variables will be linear combinations of the original variables, with different weights.  
+Another way we can reduce the number of features is using PCA (principal components analysis). PCA assumes that the *most important* characteristics of our data are the ones with the largest variance. Furthermore, it takes our data and organizes it in such a way that redundancy is removed as the most important variables are listed first. The new variables will be linear combinations of the original variables, with different weights.  
 
 In R, we can use `prcomp()` to do PCA. You can also use `svd()`.  
 
@@ -652,9 +673,26 @@ tsnePlotPerplexity(eset = geo_obj, perp = 0.5)
 tsnePlotPerplexity(eset = geo_obj, perp = 2)
 ```
 
-## Deliverables   
+__Exercise (not marked)__:
+
 1. Regenerate the `pheatmap` clustering plot for the top genes for the main effect of genotype (selected from limma by adjusted p-value less than 1e-5) using distance: "correlation", and clustering method: "centroid" (UPGMC).
+
+```{r}
+# Your code here
+```
 
 2. Regenerate the standalone dendrogram on the samples of this heatmap using the `hclust` and `dist` functions.
 
+```{r}
+# Your code here
+```
+
 3. Make a plot of PC 1 vs PC 2 using `ggplot` instead base plotting. Color the points by tissue and genotype combination.
+
+```{r}
+# Your code here
+```
+
+## Deliverables  
+
+There are no deliverables to submit for this seminar.
