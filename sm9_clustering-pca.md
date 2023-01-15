@@ -1,4 +1,4 @@
-STAT540 - Seminar 8: Unsupervised learning
+STAT540 - Seminar 9: Unsupervised learning
 ================
 
 ## Attributions

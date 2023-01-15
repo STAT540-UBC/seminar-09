@@ -1,5 +1,5 @@
 ---
-title: 'STAT540 - Seminar 8: Unsupervised learning'
+title: 'STAT540 - Seminar 9: Unsupervised learning'
 output: 
   github_document
 ---
