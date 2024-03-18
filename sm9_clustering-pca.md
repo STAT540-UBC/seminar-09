@@ -15,26 +15,26 @@ high-dimensional biology: dimension reduction and clustering.
 
 By the end of this tutorial, you should be able to:
 
--   Differentiate between sample-wise clustering and gene-wise
-    clustering, and identify when either may be appropriate
+- Differentiate between sample-wise clustering and gene-wise clustering,
+  and identify when either may be appropriate
 
--   Differentiate between agglomerative hierarchical clustering and
-    partition clustering methods like K-means
+- Differentiate between agglomerative hierarchical clustering and
+  partition clustering methods like K-means
 
--   Outline the methods used to determine an optimal number of clusters
-    in K-means clustering
+- Outline the methods used to determine an optimal number of clusters in
+  K-means clustering
 
--   Undertake dimensionality reduction using PCA
+- Undertake dimensionality reduction using PCA
 
--   Appreciate the differences between PCA and t-SNE
+- Appreciate the differences between PCA and t-SNE
 
--   Recognize that the t-SNE approach is an intricate process requiring
-    parametrization
+- Recognize that the t-SNE approach is an intricate process requiring
+  parametrization
 
--   Add cluster annotations to t-SNE visualizations of a dataset
+- Add cluster annotations to t-SNE visualizations of a dataset
 
--   Understand some of the limitations of the clustering methods, PCA,
-    and t-SNE
+- Understand some of the limitations of the clustering methods, PCA, and
+  t-SNE
 
 ## Introduction
 
@@ -81,6 +81,11 @@ already have these installed, you’ll first need to install them
 library(RColorBrewer)
 library(cluster)
 library(pvclust)
+```
+
+    ## Warning: package 'pvclust' was built under R version 4.3.3
+
+``` r
 library(xtable)
 library(limma)
 library(tidyr)
@@ -88,9 +93,24 @@ library(dplyr)
 library(GEOquery)
 library(knitr)
 library(pheatmap)
+```
+
+    ## Warning: package 'pheatmap' was built under R version 4.3.2
+
+``` r
 library(matrixStats)
+```
+
+    ## Warning: package 'matrixStats' was built under R version 4.3.2
+
+``` r
 library(ggplot2)
 library(Rtsne)
+```
+
+    ## Warning: package 'Rtsne' was built under R version 4.3.3
+
+``` r
 theme_set(theme_bw()) # prettier ggplot plots 
 ```
 
@@ -237,7 +257,7 @@ frequency histogram (using base R).
 hist(exprs(geo_obj), col="gray", main="GSE70213 - Histogram")
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 It appears a lot of genes have values \< 1000. What happens if we plot
 the frequency distribution after Log2 transformation?
@@ -249,7 +269,7 @@ the frequency distribution after Log2 transformation?
 hist(log2(exprs(geo_obj)+1), col="gray", main="GSE70213 log transformed - Histogram")
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 We’ll go ahead and work with the log2-transformed data for the remainder
 of the analyses. Note that we actually don’t have any zeroes, so there’s
@@ -291,7 +311,8 @@ rowMeans(head(exprs(geo_obj)))
 rowVars(head(exprs(geo_obj)))
 ```
 
-    ## [1] 0.045129680 0.048330346 0.087031589 0.147846847 0.005240254 0.009708631
+    ##    10338001    10338002    10338003    10338004    10338005    10338006 
+    ## 0.045129680 0.048330346 0.087031589 0.147846847 0.005240254 0.009708631
 
 ``` r
 expr_scaled <- t(scale(t(exprs(geo_obj))))
@@ -309,7 +330,8 @@ rowMeans(head(expr_scaled))
 rowVars(head(expr_scaled))
 ```
 
-    ## [1] 1 1 1 1 1 1
+    ## 10338001 10338002 10338003 10338004 10338005 10338006 
+    ##        1        1        1        1        1        1
 
 **Aside**: Note that the row means after scaling aren’t exactly zero -
 this is [due to limitations in floating point
@@ -341,7 +363,7 @@ samples.
 
 In this section, we will use samples as objects to be clustered using
 gene attributes (i.e., each sample is a vector variable of dimension
-\~35K).  
+~35K).  
 First we will cluster the data using agglomerative hierarchical
 clustering. Here, the partitions can be visualized using a
 **dendrogram** at various levels of granularity. We do not need to input
@@ -362,10 +384,10 @@ methods.
 
 However, for most expression data applications, we suggest you should:
 
--   standardize the data
--   use Euclidean as the “distance” (so it’s just like Pearson
-    correlation)
--   use “average linkage”
+- standardize the data
+- use Euclidean as the “distance” (so it’s just like Pearson
+  correlation)
+- use “average linkage”
 
 First, we’ll compute the distance with `dist` - the default distance
 metric is euclidean. Note that we need to transpose the data with `t`
@@ -407,7 +429,7 @@ plot(pr.hc.a, labels = FALSE, main = "Average", xlab = "")
 plot(pr.hc.w, labels = FALSE, main = "Ward", xlab = "")
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ``` r
 par(op)
@@ -454,7 +476,7 @@ pheatmap(expr_scaled,
          annotation = pData(geo_obj)[,c("tissue","genotype")])
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 **Exercise (not marked)**: Play with the options of the pheatmap
 function (i.e. select different `clustering_method`,
@@ -491,7 +513,7 @@ my_heatmap_obj = pheatmap(expr_scaled,
                           annotation_colors = covar_color)
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 We can also get clusters from our pheatmap object. We will use the
 `cutree` function to extract the clusters. Note that we can do this for
@@ -544,7 +566,7 @@ plot(pr.hc.w, labels = pData(geo_obj)$grp, cex = 0.6, main = "Ward, 10 clusters"
 rect.hclust(pr.hc.w, k = 10)
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 ``` r
 par(op) 
@@ -601,8 +623,8 @@ loss as clusters increase in count, to determine the number of clusters
 to use.
 
 Here we’ll just do a k-means clustering with k=5 of samples using all
-genes (\~35K). Note again that we have to transpose our expression
-matrix so our samples are in rows since `kmeans` operates on rows.
+genes (~35K). Note again that we have to transpose our expression matrix
+so our samples are in rows since `kmeans` operates on rows.
 
 ``` r
 #Objects in columns
@@ -737,7 +759,7 @@ op <- par(mar = c(5,1,4,4))
 plot(pr.pam, main = "Silhouette Plot for 5 clusters")
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 ``` r
 par(op)
@@ -745,7 +767,7 @@ par(op)
 
 **Exercise (not marked):**
 
-1.  Draw a plot with number of clusters in the x-axis and the average
+1)  Draw a plot with number of clusters in the x-axis and the average
     silhouette widths in the y-axis. Use the information obtained to
     determine if 5 was the best choice for the number of clusters.
 
@@ -753,8 +775,8 @@ par(op)
 # Your code here
 ```
 
-2.  For a common choice of *k*, compare the clustering across different
-    methods, e.g. hierarchical (pruned to specific *k*, obviously),
+2)  For a common choice of $k$, compare the clustering across different
+    methods, e.g. hierarchical (pruned to specific $k$, obviously),
     k-means, PAM. You will re-discover the “label switching problem” for
     yourself. How does that manifest itself? How concordant are the
     clusterings for different methods?
@@ -821,7 +843,7 @@ pheatmap(exprs(geo_obj)[topGenes, ],
          show_rownames = FALSE)
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
 
 Or we can plot the dendrogram of genes using the `plot` function, after
 we have made the hclust object.
@@ -834,7 +856,7 @@ geneC.hc.a <- hclust(geneC.dis, method = 'average')
 plot(geneC.hc.a, labels = FALSE, main = "Hierarchical with Average Linkage", xlab = "")
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
 
 As you can see, when there are lots of objects to cluster, the
 dendrograms are in general not very informative as it is difficult to
@@ -877,7 +899,7 @@ ggplot() +
   ylab("Relative expression")
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
 
 ## Evaluating clusters
 
@@ -931,7 +953,7 @@ plot(seq(1,k_max), aic,
      pch = 20, cex = 2, main = "Clustering Samples" )
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 Same for BIC
 
@@ -952,7 +974,7 @@ plot(seq(1,k_max), bic,
      pch = 20, cex = 2, main="Clustering Samples" )
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
 
 > Can you eyeball the optimal ‘k’ by looking at these plots?
 
@@ -1002,7 +1024,7 @@ plot(pvc, labels = pData(geo_obj)$grp, cex = 0.6)
 pvrect(pvc, alpha = 0.95) 
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
 
 Here, values at branches are AU (approximately unbiased) p-values \* 100
 (left), and BP (bootstrap p) values \* 100 (right). The p-value of a
@@ -1045,7 +1067,7 @@ pcs <- prcomp(t(exprs(geo_obj)), center = TRUE, scale = TRUE)
 plot(pcs) 
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
 
 ``` r
 # append the rotations for the first 10 PCs to the phenodata
@@ -1055,7 +1077,7 @@ prinComp <- cbind(pData(geo_obj), pcs$x[rownames(pData(geo_obj)), 1:10])
 plot(prinComp[ ,c("genotype", "tissue", "PC1", "PC2", "PC3")], pch = 19, cex = 0.8)
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-35-2.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-35-2.png)<!-- -->
 
 Right away, you might be wondering *wait, should I run `prcomp` on my
 data with genes in rows, or genes in columns?* That’s a great question,
@@ -1108,7 +1130,7 @@ explained by their first 2 principal components?
 plot(prinComp[ ,c("PC1","PC2")],  pch = 21, cex = 1.5)
 ```
 
-<img src="sm8_clustering-pca_files/figure-gfm/unnamed-chunk-37-1.png" style="display: block; margin: auto;" />
+<img src="sm9_clustering-pca_files/figure-gfm/unnamed-chunk-37-1.png" style="display: block; margin: auto;" />
 
 Is the covariate `tissue` localized in the different clusters we see?
 
@@ -1118,7 +1140,7 @@ legend(list(x = 100, y = 150), as.character(levels(pData(geo_obj)$tissue)),
        pch = 21, pt.bg = c(1,2,3,4,5))
 ```
 
-<img src="sm8_clustering-pca_files/figure-gfm/unnamed-chunk-38-1.png" style="display: block; margin: auto;" />
+<img src="sm9_clustering-pca_files/figure-gfm/unnamed-chunk-38-1.png" style="display: block; margin: auto;" />
 
 Is the covariate `genotype` localized in the different clusters we see?
 
@@ -1128,7 +1150,7 @@ legend(list(x = 100, y = 150), as.character(levels(pData(geo_obj)$genotype)),
        pch = 21, pt.bg = c(1,2,3,4,5))
 ```
 
-<img src="sm8_clustering-pca_files/figure-gfm/unnamed-chunk-39-1.png" style="display: block; margin: auto;" />
+<img src="sm9_clustering-pca_files/figure-gfm/unnamed-chunk-39-1.png" style="display: block; margin: auto;" />
 
 PCA is a useful initial means of analysing any hidden structures in your
 data. We can also use it to determine how many sources of variance are
@@ -1157,7 +1179,7 @@ summary(pcs)
     ## Proportion of Variance  0.02409  0.02298  0.02259  0.02166  0.02101  0.02004
     ## Cumulative Proportion   0.80055  0.82353  0.84612  0.86779  0.88880  0.90884
     ##                            PC19     PC20     PC21     PC22     PC23      PC24
-    ## Standard deviation     26.52966 25.79456 25.54092 24.84522 24.54739 3.155e-13
+    ## Standard deviation     26.52966 25.79456 25.54092 24.84522 24.54739 3.318e-13
     ## Proportion of Variance  0.01979  0.01871  0.01835  0.01736  0.01695 0.000e+00
     ## Cumulative Proportion   0.92863  0.94735  0.96569  0.98305  1.00000 1.000e+00
 
@@ -1165,7 +1187,7 @@ summary(pcs)
 plot(pcs$sdev^2 / sum(pcs$sdev^2), ylab = "Proportion Variance Explained", xlab = "PC")
 ```
 
-![](sm8_clustering-pca_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
+![](sm9_clustering-pca_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
 
 We see that the first two principal components capture 35% of the total
 variance. If we include the first 4 principal components, we capture
@@ -1248,6 +1270,7 @@ tsnePlotPerplexity(eset = geo_obj, perp = 0.1)
 
     ## Performing PCA
     ## Read the 24 x 24 data matrix successfully!
+    ## OpenMP is working. 1 threads.
     ## Using no_dims = 2, perplexity = 0.100000, and theta = 0.500000
     ## Computing input similarities...
     ## Perplexity should be lower than K!
@@ -1258,7 +1281,7 @@ tsnePlotPerplexity(eset = geo_obj, perp = 0.1)
     ## Iteration 100: error is 0.000000 (50 iterations in 0.00 seconds)
     ## Fitting performed in 0.00 seconds.
 
-<img src="sm8_clustering-pca_files/figure-gfm/unnamed-chunk-42-1.png" style="display: block; margin: auto;" />
+<img src="sm9_clustering-pca_files/figure-gfm/unnamed-chunk-42-1.png" style="display: block; margin: auto;" />
 
 ``` r
 tsnePlotPerplexity(eset = geo_obj, perp = 0.5)
@@ -1266,16 +1289,17 @@ tsnePlotPerplexity(eset = geo_obj, perp = 0.5)
 
     ## Performing PCA
     ## Read the 24 x 24 data matrix successfully!
+    ## OpenMP is working. 1 threads.
     ## Using no_dims = 2, perplexity = 0.500000, and theta = 0.500000
     ## Computing input similarities...
     ## Building tree...
     ## Done in 0.00 seconds (sparsity = 0.069444)!
     ## Learning embedding...
-    ## Iteration 50: error is 71.174094 (50 iterations in 0.00 seconds)
-    ## Iteration 100: error is 65.728885 (50 iterations in 0.00 seconds)
+    ## Iteration 50: error is 71.381545 (50 iterations in 0.00 seconds)
+    ## Iteration 100: error is 60.951369 (50 iterations in 0.00 seconds)
     ## Fitting performed in 0.00 seconds.
 
-<img src="sm8_clustering-pca_files/figure-gfm/unnamed-chunk-42-2.png" style="display: block; margin: auto;" />
+<img src="sm9_clustering-pca_files/figure-gfm/unnamed-chunk-42-2.png" style="display: block; margin: auto;" />
 
 ``` r
 tsnePlotPerplexity(eset = geo_obj, perp = 2)
@@ -1283,18 +1307,19 @@ tsnePlotPerplexity(eset = geo_obj, perp = 2)
 
     ## Performing PCA
     ## Read the 24 x 24 data matrix successfully!
+    ## OpenMP is working. 1 threads.
     ## Using no_dims = 2, perplexity = 2.000000, and theta = 0.500000
     ## Computing input similarities...
     ## Building tree...
     ## Done in 0.00 seconds (sparsity = 0.322917)!
     ## Learning embedding...
-    ## Iteration 50: error is 58.398580 (50 iterations in 0.00 seconds)
-    ## Iteration 100: error is 69.759320 (50 iterations in 0.00 seconds)
+    ## Iteration 50: error is 63.891916 (50 iterations in 0.00 seconds)
+    ## Iteration 100: error is 51.455915 (50 iterations in 0.00 seconds)
     ## Fitting performed in 0.00 seconds.
 
-<img src="sm8_clustering-pca_files/figure-gfm/unnamed-chunk-42-3.png" style="display: block; margin: auto;" />
+<img src="sm9_clustering-pca_files/figure-gfm/unnamed-chunk-42-3.png" style="display: block; margin: auto;" />
 
-**Exercise (not marked)**:
+## Deliverables:
 
 1.  Regenerate the `pheatmap` clustering plot for the top genes for the
     main effect of genotype (selected from limma by adjusted p-value
@@ -1318,7 +1343,3 @@ tsnePlotPerplexity(eset = geo_obj, perp = 2)
 ``` r
 # Your code here
 ```
-
-## Deliverables
-
-There are no deliverables to submit for this seminar.

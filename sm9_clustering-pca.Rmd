@@ -673,7 +673,7 @@ tsnePlotPerplexity(eset = geo_obj, perp = 0.5)
 tsnePlotPerplexity(eset = geo_obj, perp = 2)
 ```
 
-__Exercise (not marked)__:
+## Deliverables:
 
 1. Regenerate the `pheatmap` clustering plot for the top genes for the main effect of genotype (selected from limma by adjusted p-value less than 1e-5) using distance: "correlation", and clustering method: "centroid" (UPGMC).
 
@@ -693,6 +693,3 @@ __Exercise (not marked)__:
 # Your code here
 ```
 
-## Deliverables  
-
-There are no deliverables to submit for this seminar.
