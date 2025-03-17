@@ -87,11 +87,31 @@ library(pvclust)
 
 ``` r
 library(xtable)
+```
+
+    ## Warning: package 'xtable' was built under R version 4.3.2
+
+``` r
 library(limma)
 library(tidyr)
+```
+
+    ## Warning: package 'tidyr' was built under R version 4.3.2
+
+``` r
 library(dplyr)
+```
+
+    ## Warning: package 'dplyr' was built under R version 4.3.2
+
+``` r
 library(GEOquery)
 library(knitr)
+```
+
+    ## Warning: package 'knitr' was built under R version 4.3.3
+
+``` r
 library(pheatmap)
 ```
 
@@ -105,6 +125,11 @@ library(matrixStats)
 
 ``` r
 library(ggplot2)
+```
+
+    ## Warning: package 'ggplot2' was built under R version 4.3.3
+
+``` r
 library(Rtsne)
 ```
 
@@ -704,7 +729,7 @@ unlike k-means
 Here we run PAM with k = 5.
 
 ``` r
-pr.pam <- pam(pr.dis, k = 4)
+pr.pam <- pam(pr.dis, k = 5)
 pr.pamTable <- data.frame(tissue = pData(geo_obj)$tissue, 
                           genotype = pData(geo_obj)$genotype,
                           cluster = pr.pam$clustering)
@@ -716,27 +741,27 @@ kable(pr.pamTable)
 | GSM1720833 | quadriceps | control    |       1 |
 | GSM1720834 | quadriceps | control    |       1 |
 | GSM1720835 | quadriceps | control    |       1 |
-| GSM1720836 | quadriceps | control    |       1 |
+| GSM1720836 | quadriceps | control    |       2 |
 | GSM1720837 | quadriceps | control    |       1 |
-| GSM1720838 | quadriceps | control    |       2 |
-| GSM1720839 | quadriceps | nebulin KO |       2 |
-| GSM1720840 | quadriceps | nebulin KO |       2 |
-| GSM1720841 | quadriceps | nebulin KO |       2 |
-| GSM1720842 | quadriceps | nebulin KO |       2 |
-| GSM1720843 | quadriceps | nebulin KO |       2 |
-| GSM1720844 | quadriceps | nebulin KO |       2 |
-| GSM1720845 | soleus     | control    |       3 |
-| GSM1720846 | soleus     | control    |       4 |
-| GSM1720847 | soleus     | control    |       4 |
-| GSM1720848 | soleus     | control    |       4 |
-| GSM1720849 | soleus     | control    |       4 |
-| GSM1720850 | soleus     | control    |       4 |
-| GSM1720851 | soleus     | nebulin KO |       3 |
-| GSM1720852 | soleus     | nebulin KO |       3 |
-| GSM1720853 | soleus     | nebulin KO |       3 |
-| GSM1720854 | soleus     | nebulin KO |       3 |
-| GSM1720855 | soleus     | nebulin KO |       3 |
-| GSM1720856 | soleus     | nebulin KO |       3 |
+| GSM1720838 | quadriceps | control    |       3 |
+| GSM1720839 | quadriceps | nebulin KO |       3 |
+| GSM1720840 | quadriceps | nebulin KO |       3 |
+| GSM1720841 | quadriceps | nebulin KO |       3 |
+| GSM1720842 | quadriceps | nebulin KO |       3 |
+| GSM1720843 | quadriceps | nebulin KO |       3 |
+| GSM1720844 | quadriceps | nebulin KO |       3 |
+| GSM1720845 | soleus     | control    |       4 |
+| GSM1720846 | soleus     | control    |       5 |
+| GSM1720847 | soleus     | control    |       5 |
+| GSM1720848 | soleus     | control    |       5 |
+| GSM1720849 | soleus     | control    |       5 |
+| GSM1720850 | soleus     | control    |       5 |
+| GSM1720851 | soleus     | nebulin KO |       4 |
+| GSM1720852 | soleus     | nebulin KO |       4 |
+| GSM1720853 | soleus     | nebulin KO |       4 |
+| GSM1720854 | soleus     | nebulin KO |       4 |
+| GSM1720855 | soleus     | nebulin KO |       4 |
+| GSM1720856 | soleus     | nebulin KO |       4 |
 
 > Additional information on the PAM result is available through
 > `summary(pr.pam)`
@@ -1179,7 +1204,7 @@ summary(pcs)
     ## Proportion of Variance  0.02409  0.02298  0.02259  0.02166  0.02101  0.02004
     ## Cumulative Proportion   0.80055  0.82353  0.84612  0.86779  0.88880  0.90884
     ##                            PC19     PC20     PC21     PC22     PC23      PC24
-    ## Standard deviation     26.52966 25.79456 25.54092 24.84522 24.54739 3.318e-13
+    ## Standard deviation     26.52966 25.79456 25.54092 24.84522 24.54739 3.351e-13
     ## Proportion of Variance  0.01979  0.01871  0.01835  0.01736  0.01695 0.000e+00
     ## Cumulative Proportion   0.92863  0.94735  0.96569  0.98305  1.00000 1.000e+00
 
@@ -1295,8 +1320,8 @@ tsnePlotPerplexity(eset = geo_obj, perp = 0.5)
     ## Building tree...
     ## Done in 0.00 seconds (sparsity = 0.069444)!
     ## Learning embedding...
-    ## Iteration 50: error is 71.381545 (50 iterations in 0.00 seconds)
-    ## Iteration 100: error is 60.951369 (50 iterations in 0.00 seconds)
+    ## Iteration 50: error is 63.807923 (50 iterations in 0.00 seconds)
+    ## Iteration 100: error is 68.377393 (50 iterations in 0.00 seconds)
     ## Fitting performed in 0.00 seconds.
 
 <img src="sm9_clustering-pca_files/figure-gfm/unnamed-chunk-42-2.png" style="display: block; margin: auto;" />
@@ -1313,8 +1338,8 @@ tsnePlotPerplexity(eset = geo_obj, perp = 2)
     ## Building tree...
     ## Done in 0.00 seconds (sparsity = 0.322917)!
     ## Learning embedding...
-    ## Iteration 50: error is 63.891916 (50 iterations in 0.00 seconds)
-    ## Iteration 100: error is 51.455915 (50 iterations in 0.00 seconds)
+    ## Iteration 50: error is 54.697227 (50 iterations in 0.00 seconds)
+    ## Iteration 100: error is 64.708669 (50 iterations in 0.00 seconds)
     ## Fitting performed in 0.00 seconds.
 
 <img src="sm9_clustering-pca_files/figure-gfm/unnamed-chunk-42-3.png" style="display: block; margin: auto;" />

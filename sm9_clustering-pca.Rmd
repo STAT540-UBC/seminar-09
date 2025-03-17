@@ -354,7 +354,7 @@ Nice features of partitioning around medoids (PAM) are:
 Here we run PAM with k = 5.
 
 ```{r}
-pr.pam <- pam(pr.dis, k = 4)
+pr.pam <- pam(pr.dis, k = 5)
 pr.pamTable <- data.frame(tissue = pData(geo_obj)$tissue, 
                           genotype = pData(geo_obj)$genotype,
                           cluster = pr.pam$clustering)
